@@ -31,16 +31,6 @@ def get_products():
     """Get all products"""
     return db.get_all_products()
 
-
-@app.get("/products/{product_id}", response_model=Product)
-def get_product(product_id: int):
-    """Get a specific product by ID"""
-    product = db.get_product(product_id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return product
-
-
 @app.post("/products", response_model=Product)
 def create_product(product: ProductCreate):
     """Create a new product"""
@@ -67,18 +57,6 @@ def delete_product(product_id: int):
         raise HTTPException(status_code=404, detail="Product not found")
     return {"message": "Product deleted successfully"}
 
-
-# TODO: Add search endpoint with AI-powered features
-# @app.get("/products/search")
-# def search_products(query: str):
-#     """Search products using AI-powered search"""
-#     pass
-
-# TODO: Add product recommendations endpoint
-# @app.get("/products/{product_id}/recommendations")
-# def get_product_recommendations(product_id: int):
-#     """Get AI-powered product recommendations"""
-#     pass
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
