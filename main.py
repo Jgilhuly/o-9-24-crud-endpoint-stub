@@ -3,14 +3,24 @@ from typing import List
 import uvicorn
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
-from models import Product, ProductCreate, ProductUpdate
+from models import Product, ProductCreate, ProductUpdate, User, UserCreate, UserUpdate
 from database import db
 
 app = FastAPI(
     title="Product CRUD API",
     description="A simple CRUD API for managing products",
     version="1.0.0"
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -37,6 +47,15 @@ def create_product(product: ProductCreate):
     # TODO: Add validation logic here
     return db.create_product(product)
 
+@app.get("/products/{product_id}", response_model=Product)
+def get_product(product_id: int):
+    """Get a specific product by ID"""
+    product = db.get_product(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
+
+
 
 @app.put("/products/{product_id}", response_model=Product)
 def update_product(product_id: int, product_update: ProductUpdate):
@@ -47,15 +66,45 @@ def update_product(product_id: int, product_update: ProductUpdate):
         raise HTTPException(status_code=404, detail="Product not found")
     return updated_product
 
-
-@app.delete("/products/{product_id}")
+@app.delete("/products/{product_id}", status_code=204)
 def delete_product(product_id: int):
     """Delete a product"""
-    # TODO: Add proper response handling
-    success = db.delete_product(product_id)
-    if not success:
+    if not db.delete_product(product_id):
         raise HTTPException(status_code=404, detail="Product not found")
-    return {"message": "Product deleted successfully"}
+
+@app.post("/users", response_model=User)
+def create_user(user: UserCreate):
+    """Create a new user"""
+    return db.create_user(user)
+
+@app.get("/users/{user_id}", response_model=User)
+def get_user(user_id: int):
+    """Get a specific user by ID"""
+    user = db.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@app.get("/users", response_model=List[User])
+def get_all_users():
+    """Get all users"""
+    return db.get_all_users()
+
+@app.put("/users/{user_id}", response_model=User)
+def update_user(user_id: int, user_update: UserUpdate):
+    """Update an existing user"""
+    updated_user = db.update_user(user_id, user_update)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated_user
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id: int):
+    """Delete a user"""
+    success = db.delete_user(user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted successfully"}
 
 
 if __name__ == "__main__":

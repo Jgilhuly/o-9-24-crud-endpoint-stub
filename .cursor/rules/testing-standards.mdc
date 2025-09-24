@@ -1,0 +1,83 @@
+---
+alwaysApply: true
+---
+
+# Testing Standards
+
+Every time you add a new route or method, make sure to add the relevant unit test to keep coverage high.
+
+## Test Framework & Dependencies
+- **Framework**: pytest (version 7.4.3)
+- **HTTP Testing**: httpx (version 0.25.2) with FastAPI TestClient
+- **Configuration**: [pytest.ini](mdc:pytest.ini) for test discovery and output formatting
+
+## Test Structure
+- All test files follow the pattern `test_*.py`
+- Main test file: [test_main.py](mdc:test_main.py)
+- Tests are organized into logical classes:
+  - `TestRootEndpoints` - Basic API endpoints
+  - `TestProductEndpoints` - Product CRUD operations  
+  - `TestUserEndpoints` - User CRUD operations
+  - `TestValidationAndEdgeCases` - Error handling and edge cases
+
+## Running Tests
+
+### Basic Commands
+```bash
+# Run all tests
+pytest
+
+# Run with verbose output
+pytest -v
+
+# Run specific test file
+pytest test_main.py
+
+# Run specific test class
+pytest test_main.py::TestProductEndpoints
+
+# Run specific test method
+pytest test_main.py::TestProductEndpoints::test_create_product
+```
+
+### Test Client Setup
+Tests use FastAPI's `TestClient` for HTTP testing:
+```python
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+```
+
+## Test Coverage Standards
+
+### Required Test Cases
+Each endpoint must have tests for:
+- ✅ **Success cases** - Valid requests returning expected data
+- ✅ **Error cases** - 404 for not found, 422 for validation errors
+- ✅ **Edge cases** - Partial updates, minimal data, boundary conditions
+- ✅ **Response validation** - Correct status codes, data structure, field presence
+
+### Test Data Patterns
+- Use realistic test data that matches [models.py](mdc:models.py) schemas
+- Create fresh test data for each test to avoid dependencies
+- Test both full data and minimal required data scenarios
+- Verify default values are applied correctly
+
+### Assertion Standards
+- Always verify HTTP status codes
+- Check response data structure and field presence
+- Validate that updates only affect specified fields
+- Test error messages match expected format
+
+## Dependencies & Compatibility
+- **FastAPI**: 0.104.1
+- **httpx**: 0.25.2 (compatible with FastAPI TestClient)
+- **Pydantic**: 2.5.0 (use `.model_dump()` not deprecated `.dict()`)
+
+## Test Organization Best Practices
+- One test method per specific behavior
+- Clear, descriptive test method names (`test_create_product_success`)
+- Group related tests in classes
+- Include docstrings explaining test purpose
+- Use fixtures for common setup when needed
